@@ -1,5 +1,5 @@
 import numpy as np
-import sg_utils
+import sg_utils as utils
 import caffe
 
 def load_model(model_name, snapshot):
@@ -7,7 +7,7 @@ def load_model(model_name, snapshot):
   Load the model from file. Includes pointers to the prototxt file, 
   caffemodel file name, and other settings - image mean, base_image_size, vocab 
   """
-  model = sg_utils.load_variables(
+  model = utils.load_variables(
   model.net = caffe.Net(model['prototxt_file'], model['caffemodel_file'], caffe.TEST)
   return model
 
@@ -24,10 +24,10 @@ def test_model(imdb, model, detection_file = None):
   sc = np.zeros((imdb.num_images, N_WORDS), dtype=np.float)
   prob = np.zeros((imdb.num_images, N_WORDS), dtype=np.float)
   for i in xrange(len(imdb.image_index)):
-    im = []
+    im = utils.color(cv2.imread(imdb.image_path_at(i)))
     sc[i,:], prob[i,:] = test_img(im, net, model['base_image_size'], model['means'])
 
-  sg_utils.save_variables(detection_file, [sc, prob, vocab, imdb, snapshot],
+  utils.save_variables(detection_file, [sc, prob, vocab, imdb, snapshot],
     ['sc', 'prob', 'vocab', 'imdb', 'snapshot'], overwrite = True)
 
 def benchmark(imdb, gtdb, detection_file, eval_file = None):
@@ -42,11 +42,23 @@ def test_img(im, net, base_image_size, means):
   Calls Caffe to get output for this image
   """
   # Resize image
-
-  # Subtract mean
-
-  # Permute Axis
-
+  im_orig = im.astype(np.float32, copy=True)
+  im_orig -= cfg.PIXEL_MEANS
+  
+  im = upsample_image(im_orig, base_image_size)
+  im = np.transpose(im, axes = (2, 0, 1))
+  
   # Pass into Caffe
+  net.forward()
 
   # Get outputs and return them 
+
+def upsample_image(im, sz):
+  h = im.shape[0]
+  w = im.shape[1]
+  s = max(h, w)
+  I_out = np.zeros((sz, sz, 3), dtype = np.float);
+  I = cv2.resize(im, None, None, fx = sz/s, fy = sz/s, interpolation=cv2.INTER_LINEAR); 
+  SZ = I.shape;
+  I_out[0:I.shape[0], 0:I.shape[1],:] = I;
+  return I_out, I, SZ
