@@ -2,29 +2,13 @@ import sg_utils
 import numpy as np
 from collections import Counter
 from pycoco.coco import COCO
-from nltk import pos_tag, word_tokenize, wordpunct_tokenize
+from nltk import pos_tag, word_tokenize
 
-def init():
-  imset = 'train'
-  coco_caps = COCO('../data/captions_train2014.json');
-
-  # mapping to output final statistics
-  mapping = {'NNS': 'NN', 'NNP': 'NN', 'NNPS': 'NN', 'NN': 'NN', \
-    'VB': 'VB', 'VBD': 'VB', 'VBN': 'VB', 'VBZ': 'VB', 'VBP': 'VB', 'VBP': 'VB', 'VBG': 'VB', \
-    'JJR': 'JJ', 'JJS': 'JJ', 'JJ': 'JJ', \
-    'DT': 'DT', \
-    'PRP': 'PRP', 'PRP$': 'PRP', \
-    'IN': 'IN'};
-    
-  # punctuations to be removed from the sentences
-  punctuations = ["''", "'", "``", "`", "-LRB-", "-RRB-", "-LCB-", "-RCB-", \
-    ".", "?", "!", ",", ":", "-", "--", "...", ";"] 
-
-  sg_utils.save_variables('vocab_' + imset + '.pkl', \
-    [words, poss, counts], \
-    ['words', 'poss', 'counts'], \
-    overwrite = True);
-
+def get_vocab_top_k(vocab, k):
+  v = dict();
+  for key in vocab.keys():
+    v[key] = vocab[key][:k]
+  return v
 
 def get_vocab_counts(image_ids, coco_caps, max_cap, vocab):
   counts = np.zeros((len(image_ids), len(vocab['words'])), dtype = np.float)
@@ -33,7 +17,7 @@ def get_vocab_counts(image_ids, coco_caps, max_cap, vocab):
     ann_ids.sort()
     ann_ids = ann_ids[:max_cap]
     anns = coco_caps.loadAnns(ann_ids)
-    tmp = [wordpunct_tokenize( str(a['caption']).lower()) for a in anns]
+    tmp = [word_tokenize( str(a['caption']).lower()) for a in anns]
     for (j,tmp_j) in enumerate(tmp):
       pos = [vocab['words'].index(tmp_j_k) for tmp_j_k in tmp_j if tmp_j_k in vocab['words']]
       pos = list(set(pos))
@@ -47,15 +31,14 @@ def get_vocab(imset, coco_caps, punctuations, mapping):
   for i in xrange(len(image_ids)):
     annIds = coco_caps.getAnnIds(image_ids[i]);
     anns = coco_caps.loadAnns(annIds);
-    tmp = [pos_tag( wordpunct_tokenize( str(a['caption']).lower())) for a in anns]
-    # tmp = [[r + '-' + l for (l,r) in t] for t in tmp]
-    # tmp = [sorted(t) for t in tmp]
+    tmp = [pos_tag( word_tokenize( str(a['caption']).lower())) for a in anns]
     t.append(tmp)
 
   # Make a vocabulary by computing counts of words over the whole dataset.
   t = [t3 for t1 in t for t2 in t1 for t3 in t2]
   t = [(l, 'other') if mapping.get(r) is None else (l, mapping[r]) for (l,r) in t]
   vcb = Counter(elem for elem in t)
+  vcb = vcb.most_common()
 
   # Merge things that are in the same or similar pos
   word = [l for ((l,r),c) in vcb];
@@ -86,4 +69,4 @@ def get_vocab(imset, coco_caps, punctuations, mapping):
   poss = [poss[i] for i in non_punct]
 
   vocab = {'words': words, 'counts': counts, 'poss': poss};
-
+  return vocab
