@@ -13,7 +13,8 @@ def calc_pr_ovr(counts, out, K):
     score  : score which corresponds to the particular precision and recall
     ap     : average precision
   """
-  tog = np.hstack((counts[:,np.newaxis], out[:, np.newaxis].astype(np.float)))
+  K = np.float64(K)
+  tog = np.hstack((counts[:,np.newaxis].astype(np.float64), out[:, np.newaxis].astype(np.float64)))
   ind = np.argsort(out)
   ind = ind[::-1]
   score = np.array([tog[i,1] for i in ind])
@@ -23,18 +24,18 @@ def calc_pr_ovr(counts, out, K):
   fp = sortcounts.copy();
   for i in xrange(sortcounts.shape[0]):
     if sortcounts[i] > 1:
-      fp[i] = 0;
+      fp[i] = 0.;
     elif sortcounts[i] == 0:
-      fp[i] = 1;
+      fp[i] = 1.;
     elif sortcounts[i] == 1:
-      fp[i] = 1/K;
+      fp[i] = 1./K;
   
   P = np.cumsum(tp)/(np.cumsum(tp) + np.cumsum(fp));
 
   # c = accumarray(sortcounts(:)+1, 1);
   c = [np.sum(np.array(sortcounts) == i) for i in xrange(int(max(sortcounts)+1))]
   ind = np.array(range(0, len(c)));
-  numinst = ind*c*(K-1)/K;
+  numinst = ind*c*(K-1.)/K;
   numinst = np.sum(numinst, axis = 0)
   R = np.cumsum(tp)/numinst
   
@@ -66,7 +67,7 @@ def human_agreement(gt, K):
   """
   function [prec, recall] = human_agreement(gt, K)
   """
-  c = np.zeros((K+1,1), dtype=np.float)
+  c = np.zeros((K+1,1), dtype=np.float64)
   for i in xrange(len(gt)):
     c[gt[i]] += 1;
   
