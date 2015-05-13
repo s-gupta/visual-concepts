@@ -1,15 +1,17 @@
 import numpy as np
 import sg_utils as utils
-import caffe
+import cap_eval_utils
+from IPython.core.debugger import Tracer
+# import caffe
 
 def load_model(model_name, snapshot):
   """
   Load the model from file. Includes pointers to the prototxt file, 
   caffemodel file name, and other settings - image mean, base_image_size, vocab 
   """
-  model = utils.load_variables(
-  model.net = caffe.Net(model['prototxt_file'], model['caffemodel_file'], caffe.TEST)
-  return model
+  # model = utils.load_variables(
+  # model.net = caffe.Net(model['prototxt_file'], model['caffemodel_file'], caffe.TEST)
+  # return model
 
 def output_words(detection_file, eval_file, functional_words, threshold_metric, output_metric):
   """
@@ -30,12 +32,31 @@ def test_model(imdb, model, detection_file = None):
   utils.save_variables(detection_file, [sc, prob, vocab, imdb, snapshot],
     ['sc', 'prob', 'vocab', 'imdb', 'snapshot'], overwrite = True)
 
-def benchmark(imdb, gtdb, detection_file, eval_file = None):
+def benchmark(imdb, vocab, gt_label, num_references, detection_file, eval_file = None):
   # Get ground truth
   # counts = get_vocab_counts(imdb.image_index, coco_caps, max_cap, vocab)
+  dt = utils.scio.loadmat(detection_file)
+  mil_prob = dt['mil_prob'];
   
   # Benchmark the output, and return a result struct
+  P     = np.zeros(mil_prob.shape, dtype          = np.float)
+  R     = np.zeros(mil_prob.shape, dtype          = np.float)
+  score = np.zeros(mil_prob.shape, dtype          = np.float)
+  ap    = np.zeros((1,len(vocab['words'])), dtype = np.float)
+  for i in range(len(vocab['words'])):
+    P[:,i], R[:,i], score[:,i], ap[0,i] = cap_eval_utils.calc_pr_ovr(gt_label[:,i], mil_prob[:,i], num_references)
+    # print '{:20s}: {:.3f}'.format(vocab['words'][i], ap[0,i]*100) 
+  details = {'precision': P, 'recall': R, 'ap': ap, 'score': score}; 
+  
+  # Collect statistics over the POS
+  for pos in list(set(vocab['poss'])):
+    ind = [i for i,x in enumerate(vocab['poss']) if pos == x]
+    print "{:5s} [{:3d}] : {:.2f} {:.2f} ".format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(ap[0, ind]))
+  
+  ind = range(len(vocab['words'])); pos = 'all';
+  print "{:5s} [{:3d}] : {:.2f} {:.2f} ".format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(ap[0, ind]))
 
+  return details
 
 def test_img(im, net, base_image_size, means):
   """
