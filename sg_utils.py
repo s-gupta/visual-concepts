@@ -3,6 +3,7 @@ import cPickle
 import heapq
 import os
 from IPython.core.debugger import Tracer
+import scipy.io as scio
 
 def mkdir_if_missing(output_dir):
   """
