@@ -18,7 +18,10 @@ class coco_voc():
         if image_path is None else image_path;
     
     self._image_ext = '.jpg'
-    self._image_index, imlist = self._load_image_set_index()
+    image_index_str, self._image_index = self._load_image_set_index()
+
+    # Load the annotation file
+    self._coco_caption_data = COCO(os.path.join(self._devkit_path, 'captions_train2014.json'));
 
     assert os.path.exists(self._devkit_path), \
         'COCO path does not exist: {}'.format(self._devkit_path)
@@ -29,7 +32,7 @@ class coco_voc():
     """
     Returns the file name with the folder in the beginning.
     """
-    return os.path.join('%02d' % int(math.floor(int(index)/1e4)), index)
+    return os.path.join('{:02d}'.format(int(math.floor(int(index)/1e4))), '{}'.format(index))
 
   def image_path_at(self, i):
     """
@@ -71,6 +74,10 @@ class coco_voc():
   def name(self):
     return self._name
 
+  @property
+  def coco_caption_data(self):
+    return self._coco_caption_data
+  
   @property
   def num_classes(self):
     return len(self._classes)
