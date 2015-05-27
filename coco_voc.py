@@ -8,7 +8,7 @@ from pycoco.coco import COCO
 
 class coco_voc():
   def __init__(self, image_set, devkit_path=None,  image_path=None):
-    self._name = 'coco_' + '_' + image_set
+    self._name = 'coco' + '_' + image_set
     self._image_set = image_set
     self._devkit_path = self._get_default_path() \
         if devkit_path is None else devkit_path

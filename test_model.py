@@ -27,7 +27,7 @@ def test_model(imdb, model, detection_file = None):
   prob = np.zeros((imdb.num_images, N_WORDS), dtype=np.float)
   for i in xrange(len(imdb.image_index)):
     im = utils.color(cv2.imread(imdb.image_path_at(i)))
-    sc[i,:], prob[i,:] = test_img(im, net, model['base_image_size'], model['means'])
+    sc[i,:], mil_prob[i,:] = test_img(im, net, model['base_image_size'], model['means'])
 
   utils.save_variables(detection_file, [sc, prob, vocab, imdb, snapshot],
     ['sc', 'prob', 'vocab', 'imdb', 'snapshot'], overwrite = True)
