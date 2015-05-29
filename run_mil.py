@@ -1,7 +1,10 @@
 #!/usr/bin/env python
+import _init_paths
+import os, sys
 import sg_utils as utils
 import preprocess
 import coco_voc
+from test_model import *
 # import caffe
 import argparse, pprint, sys
 import numpy as np
@@ -12,6 +15,9 @@ def parse_args():
   Parse input arguments
   """
   parser = argparse.ArgumentParser(description='Compute targets for training')
+  parser.add_argument('--task', dest='task',
+            help='what to run', 
+            default='', type=str)
   parser.add_argument('--gpu', dest='gpu_id',
             help='GPU device id to use [0]',
             default=0, type=int)
@@ -27,15 +33,29 @@ def parse_args():
   parser.add_argument('--cfg', dest='cfg_file',
             help='optional config file',
             default=None, type=str)
+  
   parser.add_argument('--train_set', dest='train_set',
             help='dataset to train on',
             default='train', type=str)
   parser.add_argument('--val_set', dest='val_set',
             help='dataset to validate on',
             default='valid1', type=str)
+
+  parser.add_argument('--test_set', dest='test_set',
+            help='dataset to test on',
+            default='valid2', type=str)
+  parser.add_argument('--prototxt_deploy', dest='prototxt_deploy',
+            help='deploy prototxt', 
+            default='models/vgg/mil_finetune.prototxt.deploy', type=str)
+  parser.add_argument('--model', dest='model',
+            help='deploy prototxt', 
+            default='models/vgg/snapshot_iter_240000.caffemodel', type=str)
+
+
   parser.add_argument('--vocab_file', dest='vocab_file',
             help='vocabulary to train for',
             default='cachedir/v1/vocab_train.pkl', type=str)
+  
   parser.add_argument('--rand', dest='randomize',
             help='randomize (do not use a fixed seed)',
             action='store_true')
@@ -64,9 +84,10 @@ if __name__ == '__main__':
   # if args.gpu_id is not None:
   #   caffe.set_device(args.gpu_id)
  
+  # Load the vocabulary
+  vocab = utils.load_variables(args.vocab_file)
+  
   if args.task == 'compute_targets':
-    # Load the vocabulary
-    vocab = utils.load_variables(args.vocab_file)
     
     imdb = []
     for i, imset in enumerate([args.train_set, args.val_set]):
@@ -78,15 +99,21 @@ if __name__ == '__main__':
           imdb[i].coco_caption_data, 5, vocab)
       
       if args.write_labels:
+        a = None
 
       if args.write_splits:
-
+        a = None
       # Print the command to start training
 
-  if args.task == 'test_mdoel':
+  if args.task == 'test_model':
     imdb = coco_voc.coco_voc(args.test_set)
-    model = load_model(directory, args.snapshot)
-    test_model(imdb, model, detection_file = )
+    mean = np.array([[[ 103.939, 116.779, 123.68]]]);
+    base_image_size = 565;
+    model = load_model(args.prototxt_deploy, args.model, base_image_size, mean, vocab)
+    utils.mkdir_if_missing(args.model)
+    detection_file = os.path.join(args.model, imdb.name + '.pkl')
+    
+    test_model(imdb, model, detection_file = detection_file)
 
   if args.task == 'eval_model':
     benchmark(imdb, vocab, gt_label, num_references, detection_file, eval_file = None)

@@ -94,7 +94,9 @@ class coco_voc():
   def image_index(self):
     return self._image_index
 
-
+  @property
+  def num_images(self):
+    return len(self.image_index)
 
 if __name__ == '__main__':
   d = coco_voc('train')
