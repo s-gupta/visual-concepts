@@ -28,18 +28,19 @@ def test_model(imdb, model, detection_file = None):
   """
   N_WORDS = len(model['vocab']['words'])
   sc = np.zeros((imdb.num_images, N_WORDS), dtype=np.float)
-  prob = np.zeros((imdb.num_images, N_WORDS), dtype=np.float)
+  mil_prob = np.zeros((imdb.num_images, N_WORDS), dtype=np.float)
   for i in xrange(10): #len(imdb.image_index)):
     im = cv2.imread(imdb.image_path_at(i))
     sc[i,:], mil_prob[i,:] = test_img(im, model['net'], model['base_image_size'], model['means'])
 
-  utils.save_variables(detection_file, [sc, prob, vocab, imdb, snapshot],
-    ['sc', 'prob', 'vocab', 'imdb', 'snapshot'], overwrite = True)
+  utils.save_variables(detection_file, [sc, mil_prob, model['vocab'], imdb],
+    ['sc', 'mil_prob', 'vocab', 'imdb'], overwrite = True)
 
 def benchmark(imdb, vocab, gt_label, num_references, detection_file, eval_file = None):
   # Get ground truth
   # counts = get_vocab_counts(imdb.image_index, coco_caps, max_cap, vocab)
-  dt = utils.scio.loadmat(detection_file)
+  # dt = utils.scio.loadmat(detection_file)
+  dt = utils.load_variables(detection_file)
   mil_prob = dt['mil_prob'];
   
   # Benchmark the output, and return a result struct
@@ -70,15 +71,16 @@ def test_img(im, net, base_image_size, means):
   im_orig = im.astype(np.float32, copy=True)
   im_orig -= means
   
-  im = upsample_image(im_orig, base_image_size)
+  im, gr, grr = upsample_image(im_orig, base_image_size)
   im = np.transpose(im, axes = (2, 0, 1))
+  im = im[np.newaxis, :, :, :]
   
   # Pass into Caffe
   net.forward(data=im.astype(np.float32, copy=False))
 
   # Get outputs and return them
   mil_prob= net.blobs['mil'].data.copy()
-  sc = net.blobs['mil-max'].data.copy()
+  sc = net.blobs['mil_max'].data.copy()
 
   # reshape appropriately
   mil_prob = mil_prob.reshape((1, mil_prob.size))
@@ -91,7 +93,7 @@ def upsample_image(im, sz):
   w = im.shape[1]
   s = max(h, w)
   I_out = np.zeros((sz, sz, 3), dtype = np.float);
-  I = cv2.resize(im, None, None, fx = sz/s, fy = sz/s, interpolation=cv2.INTER_LINEAR); 
+  I = cv2.resize(im, None, None, fx = np.float(sz)/s, fy = np.float(sz)/s, interpolation=cv2.INTER_LINEAR); 
   SZ = I.shape;
   I_out[0:I.shape[0], 0:I.shape[1],:] = I;
   return I_out, I, SZ

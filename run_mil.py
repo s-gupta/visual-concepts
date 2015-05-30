@@ -21,6 +21,7 @@ def parse_args():
   parser.add_argument('--gpu', dest='gpu_id',
             help='GPU device id to use [0]',
             default=0, type=int)
+  
   parser.add_argument('--solver', dest='solver',
             help='solver prototxt',
             default=None, type=str)
@@ -79,10 +80,9 @@ if __name__ == '__main__':
   #   caffe.set_random_seed(cfg.RNG_SEED)
 
   # # set up caffe
-  # caffe.set_mode_gpu()
-  # caffe.set_logging_level(0)
-  # if args.gpu_id is not None:
-  #   caffe.set_device(args.gpu_id)
+  caffe.set_mode_gpu()
+  if args.gpu_id is not None:
+    caffe.set_device(args.gpu_id)
  
   # Load the vocabulary
   vocab = utils.load_variables(args.vocab_file)
@@ -110,13 +110,22 @@ if __name__ == '__main__':
     mean = np.array([[[ 103.939, 116.779, 123.68]]]);
     base_image_size = 565;
     model = load_model(args.prototxt_deploy, args.model, base_image_size, mean, vocab)
-    utils.mkdir_if_missing(args.model)
-    detection_file = os.path.join(args.model, imdb.name + '.pkl')
+    out_dir = args.model + '_output'
+    utils.mkdir_if_missing(out_dir)
+    detection_file = os.path.join(out_dir, imdb.name + '_detections.pkl')
     
     test_model(imdb, model, detection_file = detection_file)
 
   if args.task == 'eval_model':
-    benchmark(imdb, vocab, gt_label, num_references, detection_file, eval_file = None)
+    imdb = coco_voc.coco_voc(args.test_set)
+    gt_label = preprocess.get_vocab_counts(imdb.image_index, \
+        imdb.coco_caption_data, 5, vocab)
+    
+    out_dir = args.model + '_output'
+    utils.mkdir_if_missing(out_dir)
+    detection_file = os.path.join(out_dir, imdb.name + '_detections.pkl')
+    eval_file = os.path.join(out_dir, imdb.name + '_eval.pkl')
+    benchmark(imdb, vocab, gt_label, 5, detection_file, eval_file = eval_file)
 
   if args.task == 'output_words':
     output_words(detection_file, eval_file, functional_words, threshold_metric, output_metric)
