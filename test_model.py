@@ -82,31 +82,69 @@ def test_model(imdb, model, detection_file = None):
 
 def benchmark(imdb, vocab, gt_label, num_references, detection_file, eval_file = None):
   # Get ground truth
-  # counts = get_vocab_counts(imdb.image_index, coco_caps, max_cap, vocab)
   # dt = utils.scio.loadmat(detection_file)
   dt = utils.load_variables(detection_file)
   mil_prob = dt['mil_prob'];
   
   # Benchmark the output, and return a result struct
-  P     = np.zeros(mil_prob.shape, dtype          = np.float)
-  R     = np.zeros(mil_prob.shape, dtype          = np.float)
-  score = np.zeros(mil_prob.shape, dtype          = np.float)
-  ap    = np.zeros((1,len(vocab['words'])), dtype = np.float)
+  n_words           = len(vocab['words'])
+  P                 = np.zeros(mil_prob.shape, dtype = np.float)
+  R                 = np.zeros(mil_prob.shape, dtype = np.float)
+  score             = np.zeros(mil_prob.shape, dtype = np.float)
+  ap                = np.zeros((1, n_words), dtype   = np.float)
+  
+  human_prec        = np.zeros((1, n_words), dtype   = np.float)
+  human_rec         = np.zeros((1, n_words), dtype   = np.float)
+  
+  prec_at_human_rec = np.zeros((1, n_words), dtype   = np.float)
+  rec_at_human_prec = np.zeros((1, n_words), dtype   = np.float)
+  rec_at_half_prec  = np.zeros((1, n_words), dtype   = np.float)
+  
+  prec_at_human_rec[...] = np.nan
+  
   for i in range(len(vocab['words'])):
+    utils.tic_toc_print(1, 'benchmarking : {:4d} / {:4d}'.format(i, n_words))
     P[:,i], R[:,i], score[:,i], ap[0,i] = cap_eval_utils.calc_pr_ovr(gt_label[:,i], mil_prob[:,i], num_references)
-    # print '{:20s}: {:.3f}'.format(vocab['words'][i], ap[0,i]*100) 
-  details = {'precision': P, 'recall': R, 'ap': ap, 'score': score}; 
+    human_prec[0,i], human_rec[0,i]  = cap_eval_utils.human_agreement(gt_label[:,i], num_references)
+    
+    ind = np.where(R[:,i] >= human_rec[0,i])[0]
+    if len(ind) > 0:
+      ind = np.sort(ind)
+      prec_at_human_rec[0,i] = P[ind[0], i];
+
+    ind = np.where(P[:,i] >= human_prec[0,i])[0]
+    if len(ind) > 0:
+      ind = np.sort(ind)
+      rec_at_human_prec[0,i] = R[ind[-1], i];
+    
+    ind = np.where(P[:,i] >= 0.5)[0]
+    if len(ind) > 0:
+      ind = np.sort(ind)
+      rec_at_half_prec[0,i]  = R[ind[-1], i];
+    # # print '{:20s}: {:.3f}'.format(vocab['words'][i], ap[0,i]*100) 
+  
+  details = {'precision': P, 'recall': R, 'ap': ap, 'score': score, \
+    'prec_at_human_rec': prec_at_human_rec, 'rec_at_human_prec': rec_at_human_prec, \
+    'human_prec': human_prec, 'human_rec': human_rec, 'rec_at_half_prec': rec_at_half_prec}; 
   
   # Collect statistics over the POS
   agg = [];
   for pos in list(set(vocab['poss'])):
     ind = [i for i,x in enumerate(vocab['poss']) if pos == x]
-    print "{:5s} [{:4d}] : {:5.2f} {:5.2f} ".format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(ap[0, ind]))
-    agg.append({'pos': pos, 'ap': 100*np.mean(ap[0, ind])})  
+    print "    {:5s} [{:4d}]     :     {:5.2f}     {:5.2f}     {:5.2f}". \
+      format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(prec_at_human_rec[0, ind]), \
+        100*np.mean(human_prec[0, ind]))
+    agg.append({'pos': pos, 'ap': 100*np.mean(ap[0, ind]), \
+      'prec_at_human_rec': 100*np.mean(prec_at_human_rec[0, ind]), \
+      'human_prec': 100*np.mean(human_prec[0, ind])})  
   
   ind = range(len(vocab['words'])); pos = 'all';
-  print "{:5s} [{:4d}] : {:5.2f} {:5.2f} ".format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(ap[0, ind]))
-  agg.append({'pos': 'all', 'ap': 100*np.mean(ap[0, ind])})  
+  print "    {:5s} [{:4d}]     :     {:5.2f}     {:5.2f}     {:5.2f}". \
+    format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(prec_at_human_rec[0, ind]), \
+      100*np.mean(human_prec[0, ind]))
+  agg.append({'pos': pos, 'ap': 100*np.mean(ap[0, ind]), \
+    'prec_at_human_rec': 100*np.mean(prec_at_human_rec[0, ind]), \
+    'human_prec': 100*np.mean(human_prec[0, ind])})  
 
   if eval_file is not None:
     utils.save_variables(eval_file, [details, agg, vocab, imdb],
