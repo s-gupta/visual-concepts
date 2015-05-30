@@ -1,4 +1,7 @@
 import numpy as np
+import sg_utils as utils
+from scipy.interpolate import interp1d
+
 from IPython.core.debugger import Tracer
 
 def calc_pr_ovr(counts, out, K):
@@ -62,6 +65,24 @@ def voc_ap(rec, prec):
     ap = ap + (mrec[i] - mrec[i-1])*mpre[i];
   return ap
 
+def compute_precision_score_mapping(thresh, prec, score):
+  ind = np.argsort(thresh);
+  thresh = thresh[ind];
+  prec = prec[ind];
+  for i in xrange(1, len(prec)):
+    prec[i] = max(prec[i], prec[i-1]);
+  
+  indexes = np.unique(thresh, return_index=True)[1]
+  indexes = np.sort(indexes);
+  thresh = thresh[indexes]
+  prec = prec[indexes]
+  
+  thresh = np.vstack((min(-1000, min(thresh)-1), thresh[:, np.newaxis], max(1000, max(thresh)+1)));
+  prec = np.vstack((prec[0], prec[:, np.newaxis], prec[-1]));
+  
+  f = interp1d(thresh[:,0], prec[:,0])
+  val = f(score)
+  return val
 
 def human_agreement(gt, K):
   """
