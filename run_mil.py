@@ -120,7 +120,6 @@ if __name__ == '__main__':
     imdb = coco_voc.coco_voc(args.test_set)
     gt_label = preprocess.get_vocab_counts(imdb.image_index, \
         imdb.coco_caption_data, 5, vocab)
-    
     out_dir = args.model + '_output'
     utils.mkdir_if_missing(out_dir)
     detection_file = os.path.join(out_dir, imdb.name + '_detections.pkl')

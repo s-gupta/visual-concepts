@@ -29,12 +29,13 @@ def test_model(imdb, model, detection_file = None):
   N_WORDS = len(model['vocab']['words'])
   sc = np.zeros((imdb.num_images, N_WORDS), dtype=np.float)
   mil_prob = np.zeros((imdb.num_images, N_WORDS), dtype=np.float)
-  for i in xrange(10): #len(imdb.image_index)):
+  for i in xrange(len(imdb.image_index)):
     im = cv2.imread(imdb.image_path_at(i))
     sc[i,:], mil_prob[i,:] = test_img(im, model['net'], model['base_image_size'], model['means'])
 
-  utils.save_variables(detection_file, [sc, mil_prob, model['vocab'], imdb],
-    ['sc', 'mil_prob', 'vocab', 'imdb'], overwrite = True)
+  if detection_file is not None:
+    utils.save_variables(detection_file, [sc, mil_prob, model['vocab'], imdb],
+      ['sc', 'mil_prob', 'vocab', 'imdb'], overwrite = True)
 
 def benchmark(imdb, vocab, gt_label, num_references, detection_file, eval_file = None):
   # Get ground truth
@@ -54,13 +55,20 @@ def benchmark(imdb, vocab, gt_label, num_references, detection_file, eval_file =
   details = {'precision': P, 'recall': R, 'ap': ap, 'score': score}; 
   
   # Collect statistics over the POS
+  agg = [];
   for pos in list(set(vocab['poss'])):
     ind = [i for i,x in enumerate(vocab['poss']) if pos == x]
-    print "{:5s} [{:3d}] : {:.2f} {:.2f} ".format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(ap[0, ind]))
+    print "{:5s} [{:4d}] : {:5.2f} {:5.2f} ".format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(ap[0, ind]))
+    agg.append({'pos': pos, 'ap': 100*np.mean(ap[0, ind])})  
   
   ind = range(len(vocab['words'])); pos = 'all';
-  print "{:5s} [{:3d}] : {:.2f} {:.2f} ".format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(ap[0, ind]))
+  print "{:5s} [{:4d}] : {:5.2f} {:5.2f} ".format(pos, len(ind), 100*np.mean(ap[0, ind]), 100*np.mean(ap[0, ind]))
+  agg.append({'pos': 'all', 'ap': 100*np.mean(ap[0, ind])})  
 
+  if eval_file is not None:
+    utils.save_variables(eval_file, [details, agg, vocab, imdb],
+      ['details', 'agg', 'vocab', 'imdb'], overwrite = True)
+  
   return details
 
 def test_img(im, net, base_image_size, means):

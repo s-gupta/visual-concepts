@@ -21,7 +21,7 @@ class coco_voc():
     image_index_str, self._image_index = self._load_image_set_index()
 
     # Load the annotation file
-    self._coco_caption_data = COCO(os.path.join(self._devkit_path, 'captions_train2014.json'));
+    self._coco_caption_data = COCO(os.path.join(self._devkit_path, 'captions_val2014.json'));
 
     assert os.path.exists(self._devkit_path), \
         'COCO path does not exist: {}'.format(self._devkit_path)

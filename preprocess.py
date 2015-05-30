@@ -14,6 +14,7 @@ def get_vocab_counts(image_ids, coco_caps, max_cap, vocab):
   counts = np.zeros((len(image_ids), len(vocab['words'])), dtype = np.float)
   for i in xrange(len(image_ids)):
     ann_ids = coco_caps.getAnnIds(image_ids[i])
+    assert(len(ann_ids) >= max_cap), 'less than {:d} number of captions for image {:d}'.format(max_cap, image_ids[i])
     ann_ids.sort()
     ann_ids = ann_ids[:max_cap]
     anns = coco_caps.loadAnns(ann_ids)
