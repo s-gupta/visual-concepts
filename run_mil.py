@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import h5py, math
 import _init_paths
 import os, sys
 import sg_utils as utils
@@ -37,10 +38,17 @@ def parse_args():
   
   parser.add_argument('--train_set', dest='train_set',
             help='dataset to train on',
-            default='train', type=str)
+            default='valid1', type=str)
   parser.add_argument('--val_set', dest='val_set',
             help='dataset to validate on',
             default='valid1', type=str)
+  parser.add_argument('--train_dir', dest='train_dir',
+            help='directory to train the models from',
+            default=None, type=str)
+  parser.add_argument('--write_labels', dest='write_labels',
+            default=False, type=bool)
+  parser.add_argument('--write_splits', dest='write_splits',
+            default=False, type=bool)
 
   parser.add_argument('--calibration_set', dest='calibration_set',
             help='dataset to use eval file from',
@@ -60,10 +68,6 @@ def parse_args():
             help='vocabulary to train for',
             default='cachedir/v1/vocab_train.pkl', type=str)
   
-  parser.add_argument('--rand', dest='randomize',
-            help='randomize (do not use a fixed seed)',
-            action='store_true')
-
   if len(sys.argv) == 1:
     parser.print_help()
     sys.exit(1)
@@ -93,19 +97,37 @@ if __name__ == '__main__':
   if args.task == 'compute_targets':
     
     imdb = []
+    output_dir = args.train_dir
+    sets = ['train', 'val']
     for i, imset in enumerate([args.train_set, args.val_set]):
       imdb.append(coco_voc.coco_voc(imset))
-      print 'Loaded dataset `{:s}`'.format(imdb[i].name)
+      print 'Loaded dataset {:s}'.format(imdb[i].name)
       
       # Compute targets for the file
       counts = preprocess.get_vocab_counts(imdb[i].image_index, \
           imdb[i].coco_caption_data, 5, vocab)
       
       if args.write_labels:
-        a = None
+        label_file = os.path.join(output_dir, 'labels_' + sets[i] + '.h5') 
+        print 'Writing labels to {}'.format(label_file)
+        with h5py.File(label_file, 'w') as f:
+          for j in xrange(imdb[i].num_images):
+            ind = imdb[i].image_index[j]
+            ind_str = '{:d}/{:d}'.format(int(math.floor(ind)/1e4), ind)
+            l = f.create_dataset('/labels-{}'.format(ind_str), (1, counts.shape[1]), dtype = 'f')
+            c = counts[j,:].copy(); c = c > 0; c = c.astype(np.float32)
+            l[...] = c
+            utils.tic_toc_print(1, 'write labels {:6d} / {:6d}'.format(j, imdb[i].num_images)) 
 
       if args.write_splits:
-        a = None
+        split_file = os.path.join(output_dir, sets[i] + '.ids') 
+        print 'Writing labels to {}'.format(split_file)
+        with open(split_file, 'wt') as f:
+          for j in xrange(imdb[i].num_images):
+            ind = imdb[i].image_index[j]
+            ind_str = '{:d}/{:d}'.format(int(math.floor(ind)/1e4), ind)
+            f.write('{}\n'.format(ind_str))
+
       # Print the command to start training
 
   if args.task == 'test_model':
