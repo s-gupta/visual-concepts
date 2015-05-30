@@ -42,6 +42,9 @@ def parse_args():
             help='dataset to validate on',
             default='valid1', type=str)
 
+  parser.add_argument('--calibration_set', dest='calibration_set',
+            help='dataset to use eval file from',
+            default='valid1', type=str)
   parser.add_argument('--test_set', dest='test_set',
             help='dataset to test on',
             default='valid2', type=str)
@@ -126,10 +129,13 @@ if __name__ == '__main__':
     benchmark(imdb, vocab, gt_label, 5, detection_file, eval_file = eval_file)
 
   if args.task == 'output_words':
-    imdb = coco_voc.coco_voc(args.test_set)
     out_dir = args.model + '_output'
+    
+    imdb = coco_voc.coco_voc(args.test_set)
     detection_file = os.path.join(out_dir, imdb.name + '_detections.pkl')
-    eval_file = os.path.join(out_dir, imdb.name + '_eval.pkl')
+    
+    imdb_cal = coco_voc.coco_voc(args.calibration_set)
+    eval_file = os.path.join(out_dir, imdb_cal.name + '_eval.pkl')
     
     out_dir = os.path.join(args.model + '_output', 'txt')
     utils.mkdir_if_missing(out_dir)
@@ -137,9 +143,9 @@ if __name__ == '__main__':
     sc_file = os.path.join(out_dir, imdb.name + '_sc.txt')
     
     output_words(imdb, detection_file, eval_file, vocab, \
-      'prec', 'prec', 0.5, 5, output_file = prec_file, \
+      'prec', 'prec', 0.5, 3, output_file = prec_file, \
       functional_words = ['a', 'on', 'of', 'the', 'in', 'with', 'and', 'is', 'to', 'an', 'two', 'at', 'next', 'are'])
     
     output_words(imdb, detection_file, eval_file, vocab, \
-      'prec', 'sc', 0.5, 5, output_file = sc_file, \
+      'prec', 'sc', 0.5, 3, output_file = sc_file, \
       functional_words = ['a', 'on', 'of', 'the', 'in', 'with', 'and', 'is', 'to', 'an', 'two', 'at', 'next', 'are'])
