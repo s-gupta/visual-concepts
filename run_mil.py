@@ -121,10 +121,25 @@ if __name__ == '__main__':
     gt_label = preprocess.get_vocab_counts(imdb.image_index, \
         imdb.coco_caption_data, 5, vocab)
     out_dir = args.model + '_output'
-    utils.mkdir_if_missing(out_dir)
     detection_file = os.path.join(out_dir, imdb.name + '_detections.pkl')
     eval_file = os.path.join(out_dir, imdb.name + '_eval.pkl')
     benchmark(imdb, vocab, gt_label, 5, detection_file, eval_file = eval_file)
 
   if args.task == 'output_words':
-    output_words(detection_file, eval_file, functional_words, threshold_metric, output_metric)
+    imdb = coco_voc.coco_voc(args.test_set)
+    out_dir = args.model + '_output'
+    detection_file = os.path.join(out_dir, imdb.name + '_detections.pkl')
+    eval_file = os.path.join(out_dir, imdb.name + '_eval.pkl')
+    
+    out_dir = os.path.join(args.model + '_output', 'txt')
+    utils.mkdir_if_missing(out_dir)
+    prec_file = os.path.join(out_dir, imdb.name + '_prec.txt')
+    sc_file = os.path.join(out_dir, imdb.name + '_sc.txt')
+    
+    output_words(imdb, detection_file, eval_file, vocab, \
+      'prec', 'prec', 0.5, 5, output_file = prec_file, \
+      functional_words = ['a', 'on', 'of', 'the', 'in', 'with', 'and', 'is', 'to', 'an', 'two', 'at', 'next', 'are'])
+    
+    output_words(imdb, detection_file, eval_file, vocab, \
+      'prec', 'sc', 0.5, 5, output_file = sc_file, \
+      functional_words = ['a', 'on', 'of', 'the', 'in', 'with', 'and', 'is', 'to', 'an', 'two', 'at', 'next', 'are'])
