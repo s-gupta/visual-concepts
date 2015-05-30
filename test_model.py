@@ -58,7 +58,7 @@ def output_words(imdb, detection_file, eval_file, vocab, \
   if output_file is not None:
     with open(output_file, 'wt') as f:
       for i in xrange(imdb.num_images):
-        f.write('{:d}: ', imdb.image_index[i])
+        f.write('{:d}: '.format(imdb.image_index[i]))
         out = out_all[i]
         for j in xrange(len(out)):
           f.write('{:s} {:.2f},'.format(out[j][0], out[j][1]))
