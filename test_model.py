@@ -61,7 +61,7 @@ def output_words(imdb, detection_file, eval_file, vocab, \
         f.write('{:d}: '.format(imdb.image_index[i]))
         out = out_all[i]
         for j in xrange(len(out)):
-          f.write('{:s} {:.2f},'.format(out[j][0], out[j][1]))
+          f.write('{:s} ({:.2f}), '.format(out[j][0], out[j][1]))
         f.write('\n')
 
 def test_model(imdb, model, detection_file = None):
@@ -74,6 +74,7 @@ def test_model(imdb, model, detection_file = None):
   for i in xrange(len(imdb.image_index)):
     im = cv2.imread(imdb.image_path_at(i))
     sc[i,:], mil_prob[i,:] = test_img(im, model['net'], model['base_image_size'], model['means'])
+    utils.tic_toc_print(60, 'test_img : {:6d}/{:6d}'.format(i, len(imdb.image_index)))
 
   if detection_file is not None:
     utils.save_variables(detection_file, [sc, mil_prob, model['vocab'], imdb],
