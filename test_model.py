@@ -22,7 +22,7 @@ def output_words_image(threshold_metric, output_metric, min_words, threshold, vo
   ind_output = ind_output[::-1]
   must_keep1 = threshold_metric[ind_output] >= threshold;
   must_keep2 = np.cumsum(is_functional[ind_output]) < 1+min_words;
-  ind_output = [ind for j, ind in enumerate(ind_output) if must_keep1[j] and must_keep2[j]]
+  ind_output = [ind for j, ind in enumerate(ind_output) if must_keep1[j] or must_keep2[j]]
   out = [(vocab['words'][ind], output_metric[ind], threshold_metric[ind]) for ind in ind_output]
   return out
 
@@ -180,7 +180,7 @@ def test_img(im, net, base_image_size, means):
 def upsample_image(im, sz):
   h = im.shape[0]
   w = im.shape[1]
-  s = max(h, w)
+  s = np.float(max(h, w))
   I_out = np.zeros((sz, sz, 3), dtype = np.float);
   I = cv2.resize(im, None, None, fx = np.float(sz)/s, fy = np.float(sz)/s, interpolation=cv2.INTER_LINEAR); 
   SZ = I.shape;
