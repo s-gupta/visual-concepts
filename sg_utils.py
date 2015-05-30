@@ -4,6 +4,19 @@ import heapq
 import os
 from IPython.core.debugger import Tracer
 import scipy.io as scio
+import time
+
+
+def tic_toc_print(interval, string):
+  global tic_toc_print_time_old
+  if 'tic_toc_print_time_old' not in globals():
+    tic_toc_print_time_old = time.time()
+    print string
+  else:
+    new_time = time.time()
+    if new_time - tic_toc_print_time_old > interval:
+      tic_toc_print_time_old = new_time;
+      print string
 
 def mkdir_if_missing(output_dir):
   """
