@@ -1,6 +1,6 @@
 name: "VGG_ILSVRC_16_layers"
-layers {
-  name: "data" type: MIL_DATA top: "data" top: "label"
+layer {
+  name: "data" type: "MILData" top: "data" top: "label"
   mil_data_param {
     images_per_batch: 1 n_classes: 1000
     
@@ -8,7 +8,7 @@ layers {
     source: "output/v1/train.ids"
     randomize: 1
     
-    root_dir: "/data1/sgupta/coco/images/"
+    root_dir: "../data/images/"
     ext: "jpg"
   }
   transform_param {
@@ -18,8 +18,8 @@ layers {
   include: { phase: TRAIN }
 }
 
-layers {
-  name: "data" type: MIL_DATA top: "data" top: "label"
+layer {
+  name: "data" type: "MILData" top: "data" top: "label"
   mil_data_param {
     images_per_batch: 1 n_classes: 1000
 
@@ -27,7 +27,7 @@ layers {
     source: "output/v1/val.ids"
     randomize: 0
     
-    root_dir: "/data1/sgupta/coco/images/"
+    root_dir: "../data/images/"
     ext: "jpg"
   }
   transform_param {
@@ -193,10 +193,10 @@ layer{
   mil_param{ type: NOR }
 }
 
-layer{
-  name: "mil-max" type: "MIL" bottom: "fc8-conv" top: "mil_max"
-  mil_param{ type: MAX }
-}
+# layer{
+#   name: "mil-max" type: "MIL" bottom: "fc8-conv" top: "mil_max"
+#   mil_param{ type: MAX }
+# }
 
-layers { name: "loss" type: CROSS_ENTROPY_LOSS bottom: "mil" bottom: "label"
+layer { name: "loss" type: "CrossEntropyLoss" bottom: "mil" bottom: "label"
 loss_weight: 20 }
