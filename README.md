@@ -1,4 +1,4 @@
-### From Captions to Visual Concepts and Back ### 
+### From Captions to Visual Concepts and Back 
 Code for detecting visual concepts in images.
 
 #### Installation Instructions ####
@@ -6,18 +6,18 @@ Code for detecting visual concepts in images.
 
   ```shell
   git clone git@github.com:s-gupta/im2cap.git code
-  git clone git@github.com:pdollar/coco.git coco
+  git clone git@github.com:pdollar/coco.git code/coco
   ```
 
 0. Make caffe and pycaffe 
 
   ```shell
-  git clone git@github.com:s-gupta/caffe.git caffe 
-  cd caffe 
+  git clone git@github.com:s-gupta/caffe.git code/caffe 
+  cd code/caffe 
   git checkout mil
   make -j 16
   make pycaffe
-  cd
+  cd ../../
   ```
 
 0. Get the COCO images, caffe imagenet models, pretrained models on COCO.
