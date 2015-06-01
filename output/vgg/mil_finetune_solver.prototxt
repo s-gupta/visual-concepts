@@ -1,0 +1,15 @@
+train_net: "protofiles/v39/mil_finetune.prototxt"
+test_net: "protofiles/v39/mil_finetune.prototxt"
+test_iter: 50
+test_interval: 1000
+test_compute_loss: 1
+base_lr: 0.000015625
+lr_policy: "step"
+gamma: 0.1
+stepsize: 80000
+display: 20 
+max_iter: 240000
+momentum: 0.99
+weight_decay: 0.0005
+snapshot: 10000
+snapshot_prefix: "protofiles/v39/snapshot"
