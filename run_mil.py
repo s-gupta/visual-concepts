@@ -15,7 +15,8 @@ def parse_args():
   """
   Parse input arguments
   """
-  parser = argparse.ArgumentParser(description='Compute targets for training')
+  parser = argparse.ArgumentParser(description='Script for training and testing word detection models.')
+
   parser.add_argument('--task', dest='task',
             help='what to run', 
             default='', type=str)
