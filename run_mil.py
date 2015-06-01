@@ -113,9 +113,9 @@ if __name__ == '__main__':
         with h5py.File(label_file, 'w') as f:
           for j in xrange(imdb[i].num_images):
             ind = imdb[i].image_index[j]
-            ind_str = '{:d}/{:d}'.format(int(math.floor(ind)/1e4), ind)
-            l = f.create_dataset('/labels-{}'.format(ind_str), (1, counts.shape[1]), dtype = 'f')
-            c = counts[j,:].copy(); c = c > 0; c = c.astype(np.float32)
+            ind_str = '{:02d}/{:d}'.format(int(math.floor(ind)/1e4), ind)
+            l = f.create_dataset('/labels-{}'.format(ind_str), (1, 1, counts.shape[1], 1), dtype = 'f')
+            c = counts[j,:].copy(); c = c > 0; c = c.astype(np.float32); c = c.reshape((1, 1, c.size, 1))
             l[...] = c
             utils.tic_toc_print(1, 'write labels {:6d} / {:6d}'.format(j, imdb[i].num_images)) 
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         with open(split_file, 'wt') as f:
           for j in xrange(imdb[i].num_images):
             ind = imdb[i].image_index[j]
-            ind_str = '{:d}/{:d}'.format(int(math.floor(ind)/1e4), ind)
+            ind_str = '{:02d}/{:d}'.format(int(math.floor(ind)/1e4), ind)
             f.write('{}\n'.format(ind_str))
 
       # Print the command to start training
