@@ -15,6 +15,6 @@ for set_ in sets:
     in_file = os.path.join('../data', set_ + '2014', \
       'COCO_{}2014_{:012d}.jpg'.format(set_, imdb.image_index[i])); 
     out_file = imdb.image_path_at(i)
-    print in_file, out_file
-    # shutil.copyfile(in_file, out_file)
+    # print in_file, out_file
+    shutil.copyfile(in_file, out_file)
     utils.tic_toc_print(1, ' Copying images [{}]: {:06d} / {:06d}\n'.format(set_, i, imdb.num_images));
