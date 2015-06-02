@@ -5,7 +5,7 @@ Code for detecting visual concepts in images.
 0. Create directory, checkout code, caffe, coco-hooks
 
   ```shell
-  git clone git@github.com:s-gupta/im2cap.git code
+  git clone git@github.com:s-gupta/visual-concepts.git code
   git clone git@github.com:pdollar/coco.git code/coco
   ```
 
@@ -23,8 +23,18 @@ Code for detecting visual concepts in images.
 0. Get the COCO images, caffe imagenet models, pretrained models on COCO.
 
   ``` shell
-  # Get the COCO images, splits, ground truth
-  wget form_somewhere && tar -xf data.tgz
+  # Get the COCO splits, ground truth
+  wget ftp://ftp.cs.berkeley.edu/pub/projects/vision/im2cap-cvpr15b/data.tgz && tar -xf data.tgz
+  
+  # Get the COCO images
+  cd code
+  
+  # Download and unzip the images 
+  bash scripts/script_download_coco.sh
+  
+  # The code assumes images to be stored heirarchically. 
+  # This python scripts does the required copying.
+  PYTHONPATH='.' python scripts/script_download_coco.py
   
   # Get the caffe imagenet models 
   wget ftp://ftp.cs.berkeley.edu/pub/projects/vision/im2cap-cvpr15b/caffe-data.tgz && tar -xf caffe-data.tgz
