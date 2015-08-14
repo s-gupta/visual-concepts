@@ -7,7 +7,7 @@ python run_mil.py --task compute_targets \
   --vocab_file vocabs/vocab_train.pkl 
 
 # Command to launch the training
-GLOG_logtostderr=1 caffe/build_mil_vader/tools/caffe.bin train -gpu 0 \
+GLOG_logtostderr=1 caffe/build/tools/caffe.bin train -gpu 0 \
   -model output/v1/mil_finetune.prototxt \
   -solver output/v1/mil_finetune_solver.prototxt \
   -weights ../caffe-data/vgg_16_full_conv.caffemodel 2>&1 \
