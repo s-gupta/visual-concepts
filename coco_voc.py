@@ -46,8 +46,7 @@ class coco_voc():
     """
     pre_fix = '%02d' % int(math.floor(int(index)/1e4))
     image_path = os.path.join(self._image_path, self.get_file_name(index) + self._image_ext)
-    assert os.path.exists(image_path), \
-        'Path does not exist: {}'.format(image_path)
+    # assert os.path.exists(image_path), 'Path does not exist: {}'.format(image_path)
     return image_path
 
   def _load_image_set_index(self):
