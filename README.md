@@ -7,6 +7,9 @@ Code for detecting visual concepts in images.
   ```shell
   git clone git@github.com:s-gupta/visual-concepts.git code
   git clone git@github.com:pdollar/coco.git code/coco
+  cd code/coco
+  git checkout 3736a0068b6e4634563b0c5847d7783dae9bd461
+  cd ../../
   ```
 
 0. Make caffe and pycaffe 
