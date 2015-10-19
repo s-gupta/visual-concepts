@@ -48,6 +48,8 @@ Code for detecting visual concepts in images.
   # were not complete. v2 tar ball fixes this.
   wget ftp://ftp.cs.berkeley.edu/pub/projects/vision/im2cap-cvpr15b/trained-coco.v2.tgz && tar -xf trained-coco.v2.tgz 
   ```
+#### Demo ####
+Look at ``demo.ipynb`` for a demo in IPython notebook.
 
 #### Training, Testing the model ####
 ``cd code`` and execute relevant commands from the file ``scripts/scripts_all.py`` 
