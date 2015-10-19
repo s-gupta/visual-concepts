@@ -55,9 +55,9 @@ Code for detecting visual concepts in images.
 If you find this codebase useful in your research, please consider citing the following paper:
 
     @InProceedings{Fang_2015_CVPR,
-    author = {Fang, Hao and Gupta, Saurabh and Iandola, Forrest and Srivastava, Rupesh K. and Deng, Li and Dollar, Piotr and Gao, Jianfeng and He, Xiaodong and Mitchell, Margaret and Platt, John C. and Lawrence Zitnick, C. and Zweig, Geoffrey},
-    title = {From Captions to Visual Concepts and Back},
-    booktitle = {The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
-    month = {June},
-    year = {2015}
+      author = {Fang, Hao and Gupta, Saurabh and Iandola, Forrest and Srivastava, Rupesh K. and Deng, Li and Dollar, Piotr and Gao, Jianfeng and He, Xiaodong and Mitchell, Margaret and Platt, John C. and Lawrence Zitnick, C. and Zweig, Geoffrey},
+      title = {From Captions to Visual Concepts and Back},
+      booktitle = {The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+      month = {June},
+      year = {2015}
     }
