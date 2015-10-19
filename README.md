@@ -44,8 +44,9 @@ Code for detecting visual concepts in images.
   # Get the caffe imagenet models 
   wget ftp://ftp.cs.berkeley.edu/pub/projects/vision/im2cap-cvpr15b/caffe-data.tgz && tar -xf caffe-data.tgz
   
-  # Get the pretrained models 
-  wget ftp://ftp.cs.berkeley.edu/pub/projects/vision/im2cap-cvpr15b/trained-coco.tgz && tar -xf trained-coco.tgz 
+  # Get the pretrained models. The precomputed results in the previous tarball
+  # were not complete. v2 tar ball fixes this.
+  wget ftp://ftp.cs.berkeley.edu/pub/projects/vision/im2cap-cvpr15b/trained-coco.v2.tgz && tar -xf trained-coco.v2.tgz 
   ```
 
 #### Training, Testing the model ####
